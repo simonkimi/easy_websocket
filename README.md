@@ -27,8 +27,9 @@ class Server(EasyServer):
             await asyncio.sleep(1)
 
 
-server = Server("localhost", 5678)
-server.start()
+if __name__ == "__main__":
+    server = Server("localhost", 5678)
+    server.start()
 ```
 
 client.py
