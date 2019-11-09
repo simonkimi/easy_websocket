@@ -1,5 +1,5 @@
 # easy_websocket
-## 基于websocket二次封装的websocket异步服务端与客户端
+## 基于python和websockets二次封装的异步服务端与客户端
 
 demo：
 
