@@ -39,8 +39,8 @@ from easy_websocket import EasyClient
 
 
 class Client(EasyClient):
-    def __init__(self, host):
-        super().__init__(host)
+    def __init__(self, uri):
+        super().__init__(uri)
 
         # add you task here
         self.add_event(self.heartbeat)
