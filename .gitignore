@@ -1,3 +1,5 @@
 /venv-linux
 /venv
 /.idea
+/test/test.py
+/build

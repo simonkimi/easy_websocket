@@ -8,54 +8,69 @@ server.py
 import asyncio
 import time
 from easy_websocket import EasyServer
+from websockets import WebSocketCommonProtocol
+
+server = EasyServer("localhost", 5678)
 
 
-class Server(EasyServer):
-    def __init__(self, host, port):
-        super().__init__(host, port)
-        
-        # add you task here
-        self.add_event(self.send_time)
-
-    async def on_message(self, msg):
-        print(f"Server get message {msg}")
-        await self.websocket.send(f"You send {msg}")
-
-    async def send_time(self):
-        while True:
-            await self.websocket.send(str(time.time()))
-            await asyncio.sleep(1)
+@server.init_event()
+async def auth(websocket: WebSocketCommonProtocol):
+    token = await websocket.recv()
+    if token != "123456":
+        await websocket.send("error")
+        await websocket.close(code=1008, reason="token not expected")
+    else:
+        await websocket.send("ok")
 
 
-if __name__ == "__main__":
-    server = Server("localhost", 5678)
-    server.start()
+@server.event()
+async def on_message(websocket: WebSocketCommonProtocol):
+    while True:
+        msg = await websocket.recv()
+        print(f"Server get message: {msg}")
+
+
+@server.event()
+async def send_time(websocket: WebSocketCommonProtocol):
+    while True:
+        await websocket.send(str(time.time()))
+        await asyncio.sleep(1)
+
+server.start()
+
 ```
 
 client.py
 ```python
 import asyncio
 from easy_websocket import EasyClient
+from websockets import WebSocketCommonProtocol
+
+client = EasyClient('ws://localhost:5678')
 
 
-class Client(EasyClient):
-    def __init__(self, uri):
-        super().__init__(uri)
+@client.init_event()
+async def auth(websocket: WebSocketCommonProtocol):
+    await websocket.send("123456")
+    msg = await websocket.recv()
+    if msg != "ok":
+        await websocket.close(code=1008)
 
-        # add you task here
-        self.add_event(self.heartbeat)
 
-    async def on_message(self, msg):
+@client.event()
+async def on_message(websocket: WebSocketCommonProtocol):
+    while True:
+        msg = await websocket.recv()
         print(f"Client get message: {msg}")
 
-    async def heartbeat(self):
-        while True:
-            await self.websocket.send("Heartbeat")
-            await asyncio.sleep(5)
+
+@client.event()
+async def heartbeat(websocket: WebSocketCommonProtocol):
+    while True:
+        await websocket.send("Heartbeat")
+        await asyncio.sleep(5)
 
 
-if __name__ == "__main__":
-    client = Client('ws://localhost:5678')
-    client.start()
+client.start()
 
 ```
